@@ -45,3 +45,7 @@ replit.nix
 .config/
 .cache/
 attached_assets/
+
+# Python specific
+pyproject.toml
+uv.lock
