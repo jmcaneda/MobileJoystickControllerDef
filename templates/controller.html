@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Player Controller</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="controller-container container-fluid">
+        <span id="status" class="badge text-danger">Disconnected</span>
+        <div class="controls-container"></div>
+        
+        <div class="row h-100">
+            <!-- Left side - Joystick -->
+            <div class="col-6 d-flex align-items-center justify-content-center">
+                <div id="joystick-area" class="joystick-area">
+                    <div id="joystick" class="joystick"></div>
+                </div>
+            </div>
+            
+            <!-- Right side - Action buttons -->
+            <div class="col-6 d-flex align-items-center justify-content-center">
+                <div class="position-relative" style="width: 200px; height: 200px;">
+                    <button class="control-btn position-absolute" 
+                            style="top: 0; left: 50%; transform: translateX(-50%);"
+                            data-action="up">↑</button>
+                    <button class="control-btn position-absolute" 
+                            style="bottom: 0; left: 50%; transform: translateX(-50%);"
+                            data-action="down">↓</button>
+                    <button class="control-btn position-absolute" 
+                            style="left: 0; top: 50%; transform: translateY(-50%);"
+                            data-action="left">←</button>
+                    <button class="control-btn position-absolute" 
+                            style="right: 0; top: 50%; transform: translateY(-50%);"
+                            data-action="right">→</button>
+                </div>
+                <div class="mt-4 d-flex justify-content-around">
+                    <button class="control-btn" data-action="A">A</button>
+                    <button class="control-btn" data-action="B">B</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/controller.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+using UnityEngine;
+using UnityEngine.AI;
+
+public class PlayerController : MonoBehaviour
+{
+    public float moveSpeed = 5f;
+    public float jumpForce = 5f;
+    public float rotationSpeed = 100f;
+    private Vector3 movement;
+    private Rigidbody rb;
+    private bool isGrounded;
+    private NavMeshAgent agent;
+    private Animator animator;
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody>();
+        agent = GetComponent<NavMeshAgent>();
+        animator = GetComponent<Animator>();
+        agent.speed = moveSpeed;
+        animator.Play("Idle");
+    }
+
+    void Update()
+    {
+        HandleKeyboardInput();
+        if (movement != Vector3.zero)
+        {
+            agent.Move(movement * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation,
+                Quaternion.LookRotation(movement),
+                Time.deltaTime * rotationSpeed);
+            animator.Play("Walk");
+        }
+        else
+        {
+            animator.Play("Idle");
+        }
+    }
+
+    void HandleKeyboardInput()
+    {
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
+
+        // WASD or Arrow keys
+        if (horizontalInput != 0 || verticalInput != 0)
+        {
+            movement = new Vector3(horizontalInput, 0, verticalInput) * moveSpeed;
+           
+            animator.SetFloat("Horizontal", horizontalInput);
+            animator.SetFloat("Vertical", verticalInput);
+               
+        }
+        else
+        {
+            movement = Vector3.zero;
+        }
+
+        // Jump with Space
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Jump();
+        }
+
+        // Attack with Left Control or Left Mouse
+        if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetMouseButtonDown(0))
+        {
+            Attack();
+        }
+    }
+
+    void HandleJoystickInput(string jsonData)
+    {
+        JoystickData data = JsonUtility.FromJson<JoystickData>(jsonData);
+        movement = new Vector3(data.x, 0, data.y) * moveSpeed;
+    }
+
+    void HandleButtonInput(string jsonData)
+    {
+        ButtonData data = JsonUtility.FromJson<ButtonData>(jsonData);
+        if (data.state == "pressed")
+        {
+            switch (data.action)
+            {
+                case "up": movement = Vector3.forward * moveSpeed; break;
+                case "down": movement = Vector3.back * moveSpeed; break;
+                case "left": movement = Vector3.left * moveSpeed; break;
+                case "right": movement = Vector3.right * moveSpeed; break;
+                case "A": Jump(); break;
+                case "B": Attack(); break;
+            }
+        }
+        else if (data.state == "released")
+        {
+            if (data.action != "A" && data.action != "B")
+            {
+                movement = Vector3.zero;
+            }
+        }
+    }
+
+    void Jump()
+    {
+        if (isGrounded)
+        {
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        }
+    }
+
+    void Attack()
+    {
+        Debug.Log("Attack action performed!");
+        // Implementa aquí la lógica del ataque
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        isGrounded = true;
+    }
+
+    void OnCollisionExit(Collision collision)
+    {
+        isGrounded = false;
+    }
+}
+
+[System.Serializable]
+public class JoystickData
+{
+    public float x;
+    public float y;
+}
+
+[System.Serializable]
+public class ButtonData
+{
+    public string action;
+    public string state;
+}

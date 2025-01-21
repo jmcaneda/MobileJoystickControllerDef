@@ -1,0 +1,75 @@
+using UnityEngine;
+using System;
+
+[Serializable]
+public class JoystickData { public float x; public float y; }
+
+public class PlayerController : MonoBehaviour
+{ // Estructura para los datos del joystick [Serializable] private class JoystickData { public float x; public float y; }
+
+    // Estructura para los datos de los botones
+    [Serializable]
+    private class ButtonData
+    {
+        public string action;
+        public string state;
+    }
+    // Variables para el movimiento
+    public float moveSpeed = 5f;
+    private Vector3 joystickInput;
+    private bool[] buttonStates = new bool[4]; // up, down, left, right
+    void Start()
+    {
+        // Asegurarse de que el objeto no se destruya al cambiar de escena
+        DontDestroyOnLoad(gameObject);
+    }
+    void Update()
+    {
+        // Aplicar movimiento basado en el joystick
+        transform.Translate(new Vector3(joystickInput.x, 0, joystickInput.y) * moveSpeed * Time.deltaTime);
+        // Aplicar movimiento basado en los botones
+        Vector3 buttonMovement = Vector3.zero;
+        if (buttonStates[0]) buttonMovement.z = 1;  // up
+        if (buttonStates[1]) buttonMovement.z = -1; // down
+        if (buttonStates[2]) buttonMovement.x = -1; // left
+        if (buttonStates[3]) buttonMovement.x = 1;  // right
+        transform.Translate(buttonMovement * moveSpeed * Time.deltaTime);
+    }
+    // Método llamado desde JavaScript cuando se recibe input del joystick
+    public void HandleJoystickInput(string jsonData)
+    {
+        try
+        {
+            var data = JsonUtility.FromJson<JoystickData>(jsonData);
+            joystickInput = new Vector3(data.x, 0, data.y);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error parsing joystick data: {e.Message}");
+        }
+    }
+    // Método llamado desde JavaScript cuando se recibe input de botones
+    public void HandleButtonInput(string jsonData)
+    {
+        try
+        {
+            var data = JsonUtility.FromJson<ButtonData>(jsonData);
+            int buttonIndex = -1;
+            switch (data.action)
+            {
+                case "up": buttonIndex = 0; break;
+                case "down": buttonIndex = 1; break;
+                case "left": buttonIndex = 2; break;
+                case "right": buttonIndex = 3; break;
+            }
+            if (buttonIndex != -1)
+            {
+                buttonStates[buttonIndex] = data.state == "pressed";
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error parsing button data: {e.Message}");
+        }
+    }
+}
