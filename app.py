@@ -74,7 +74,7 @@ def serve_static(path):
         return response
     except Exception as e:
         app.logger.error("=== Error Tracking ===")
-        app.logger.error(f"Last successful line: serve_static - before exception")
+        app.logger.error("Last successful line: serve_static - before exception")
         app.logger.error(f"Error serving {path}: {str(e)}", exc_info=True)
         if path.endswith('.wasm'):
             try:
