@@ -24,12 +24,15 @@ def serve_static(path):
     response = send_from_directory('static', path)
     if path.endswith('.wasm'):
         response.headers['Content-Type'] = 'application/wasm'
-        # Remove any compression headers
-        response.headers.pop('Content-Encoding', None)
-        response.headers.pop('Content-Length', None)
-        # Add necessary CORS headers
+        response.headers['Accept-Ranges'] = 'bytes'
+        response.headers['Cache-Control'] = 'no-transform'
+        # Ensure no compression
+        for header in ['Content-Encoding', 'Content-Length', 'Transfer-Encoding']:
+            response.headers.pop(header, None)
+        # CORS headers
         response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
         response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+        response.headers['Access-Control-Allow-Origin'] = '*'
     elif path.endswith('.js'):
         response.headers['Content-Type'] = 'application/javascript'
     return response
