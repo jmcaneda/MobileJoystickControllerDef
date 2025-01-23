@@ -24,6 +24,7 @@ def serve_static(path):
     response = send_from_directory('static', path)
     if path.endswith('.wasm'):
         response.headers['Content-Type'] = 'application/wasm'
+        response.headers['Content-Encoding'] = ''  # Clear any content encoding
     elif path.endswith('.js'):
         response.headers['Content-Type'] = 'application/javascript'
     return response
