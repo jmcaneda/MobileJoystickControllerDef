@@ -25,50 +25,49 @@ def serve_static(path):
         app.logger.info("=== Execution Tracking ===")
         app.logger.info(f"[Line START] serve_static({path})")
         app.logger.info(f"Attempting to serve static file: {path}")
-        
+
         # Verify file exists
         full_path = os.path.join('static', path)
         if not os.path.exists(full_path):
             app.logger.error(f"File not found: {full_path}")
             return f"File not found: {path}", 404
-            
+
         if path.endswith('.wasm'):
-            app.logger.info(f"WASM file request detected: {path}")
-            app.logger.info(f"WASM file size: {os.path.getsize(full_path)} bytes")
-            app.logger.info("Verifying WASM file integrity...")
             try:
+                app.logger.info("=== WASM Debug Info ===")
+                app.logger.info(f"Processing WASM file: {path}")
+                app.logger.info(f"Full path: {full_path}")
+                app.logger.info(f"File exists: {os.path.exists(full_path)}")
+                app.logger.info(f"File size: {os.path.getsize(full_path)} bytes")
+
+                # Verify WASM file integrity
                 with open(full_path, 'rb') as f:
                     wasm_header = f.read(4)
-                    if wasm_header == b'\x00\x61\x73\x6D':
-                        app.logger.info("WASM file header verified successfully")
-                    else:
-                        app.logger.warning("Invalid WASM file header detected")
+                    app.logger.info(f"WASM header hex: {wasm_header.hex()}")
+                    if wasm_header != b'\x00\x61\x73\x6D':
+                        app.logger.error("Invalid WASM header detected!")
+
+                app.logger.info("Setting WASM specific headers...")
+                response.headers['Content-Type'] = 'application/wasm'
+                response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+                response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+                response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+                response.direct_passthrough = True
+                app.logger.info("=== End WASM Debug Info ===")
             except Exception as e:
-                app.logger.error(f"Error reading WASM file: {str(e)}")
-            
+                app.logger.error(f"WASM processing error: {str(e)}")
+                raise
+
         app.logger.info(f"File found: {full_path}")
         response = send_from_directory('static', path)
         app.logger.info(f"File type: {response.mimetype}")
-        
-        if path.endswith('.wasm'):
-            app.logger.info("Processing WASM file")
-            app.logger.info("Setting WASM specific headers...")
-            response.headers['Content-Type'] = 'application/wasm'
-            response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
-            response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
-            app.logger.info("WASM CORS headers set")
-            response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
-            response.headers['Accept-Ranges'] = 'bytes'
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-            response.direct_passthrough = True
-            app.logger.info("WASM headers set successfully")
-        elif path.endswith('.js'):
+
+
+        if path.endswith('.js'):
             app.logger.info("Processing JS file")
             response.headers['Content-Type'] = 'application/javascript'
             app.logger.info("JS headers set successfully")
-            
+
         app.logger.info(f"Successfully serving {path}")
         app.logger.info("[Line SUCCESS] Last successful line before return")
         return response
