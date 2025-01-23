@@ -1,12 +1,8 @@
 import os
 from flask import Flask, render_template, send_from_directory
 import mimetypes
-
-# Add WASM MIME type
-mimetypes.add_type('application/wasm', '.wasm'), send_from_directory
 from flask_socketio import SocketIO, emit
 import logging
-import mimetypes
 
 # Add MIME type for WebAssembly
 mimetypes.add_type('application/wasm', '.wasm')
