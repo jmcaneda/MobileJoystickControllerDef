@@ -30,15 +30,31 @@ def serve_static(path):
             app.logger.error(f"File not found: {full_path}")
             return f"File not found: {path}", 404
             
+        if path.endswith('.wasm'):
+            app.logger.info(f"WASM file request detected: {path}")
+            app.logger.info(f"WASM file size: {os.path.getsize(full_path)} bytes")
+            app.logger.info("Verifying WASM file integrity...")
+            try:
+                with open(full_path, 'rb') as f:
+                    wasm_header = f.read(4)
+                    if wasm_header == b'\x00\x61\x73\x6D':
+                        app.logger.info("WASM file header verified successfully")
+                    else:
+                        app.logger.warning("Invalid WASM file header detected")
+            except Exception as e:
+                app.logger.error(f"Error reading WASM file: {str(e)}")
+            
         app.logger.info(f"File found: {full_path}")
         response = send_from_directory('static', path)
         app.logger.info(f"File type: {response.mimetype}")
         
         if path.endswith('.wasm'):
             app.logger.info("Processing WASM file")
+            app.logger.info("Setting WASM specific headers...")
             response.headers['Content-Type'] = 'application/wasm'
             response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+            app.logger.info("WASM CORS headers set")
             response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
             response.headers['Accept-Ranges'] = 'bytes'
             response.headers['Access-Control-Allow-Origin'] = '*'
