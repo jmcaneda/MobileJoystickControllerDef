@@ -21,7 +21,12 @@ def index():
 
 @app.route('/static/<path:path>')
 def serve_static(path):
-    return send_from_directory('static', path)
+    response = send_from_directory('static', path)
+    if path.endswith('.wasm'):
+        response.headers['Content-Type'] = 'application/wasm'
+    elif path.endswith('.js'):
+        response.headers['Content-Type'] = 'application/javascript'
+    return response
 
 @app.route('/controller')
 def controller():
