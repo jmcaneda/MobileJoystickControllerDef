@@ -1,3 +1,4 @@
+
 import os
 from flask import Flask, render_template, send_from_directory
 import mimetypes
@@ -16,13 +17,6 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-
-@app.route('/static/<path:path>')
-def serve_static(path):
-    response = send_from_directory('static', path)
-    if path.endswith('.wasm'):
-        response.headers['Content-Type'] = 'application/wasm'
-    return response
 app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY") or "game_controller_secret"
 socketio = SocketIO(app, cors_allowed_origins="*")
 
@@ -40,7 +34,6 @@ def serve_static(path):
             response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
             response.headers['Access-Control-Allow-Origin'] = '*'
-            # Asegurarse de que no haya compresión
             response.headers.pop('Content-Encoding', None)
             response.direct_passthrough = False
         elif path.endswith('.js'):
