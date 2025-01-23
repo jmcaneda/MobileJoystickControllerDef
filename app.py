@@ -29,19 +29,22 @@ def controller():
 
 @socketio.on('connect')
 def handle_connect():
-    logger.debug('Client connected')
-    emit('connection_response', {'data': 'Connected'})
+    app.logger.debug('Client connected')
+
+@socketio.on('client_type')
+def handle_client_type(data):
+    app.logger.debug(f'Client type: {data.get("type")}')
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    logger.debug('Client disconnected')
+    app.logger.debug('Client disconnected')
 
 @socketio.on('control_event')
 def handle_control_event(data):
-    logger.debug(f'Received control event: {data}')
+    app.logger.debug(f'Received control event: {data}')
     # Broadcast the control event to all connected clients (including Unity)
     emit('game_control', data, broadcast=True)
 
 @socketio.on_error()
 def error_handler(e):
-    logger.error(f'SocketIO error: {str(e)}')
+    app.logger.error(f'SocketIO error: {str(e)}')
