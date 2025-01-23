@@ -35,13 +35,13 @@ def serve_static(path):
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
             response.headers['Access-Control-Allow-Origin'] = '*'
             response.headers.pop('Content-Encoding', None)
-            response.direct_passthrough = False
+            response.direct_passthrough = True
         elif path.endswith('.js'):
             response.headers['Content-Type'] = 'application/javascript'
         return response
     except Exception as e:
         app.logger.error(f"Error serving {path}: {str(e)}")
-        return str(e), 500
+        return f"Failed to serve {path}: {str(e)}", 500
 
 @app.route('/controller')
 def controller():
