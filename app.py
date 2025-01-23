@@ -23,7 +23,15 @@ def index():
 def serve_static(path):
     try:
         app.logger.info(f"Serving static file: {path}")
-        response = send_from_directory('static', path)
+        response = send_from_directory('static', path, conditional=True)
+        
+        if path.endswith('.wasm'):
+            response.headers['Content-Type'] = 'application/wasm'
+            response.headers['Content-Disposition'] = 'attachment; filename=Builds.wasm'
+            response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+            response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+            response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+            response.headers['Cache-Control'] = 'no-cache'
         
         if path.endswith('.wasm'):
             response.headers['Content-Type'] = 'application/wasm'

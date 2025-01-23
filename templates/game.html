@@ -71,6 +71,19 @@
         codeUrl: buildUrl + "/Builds.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
+        productName: "WebGLGame",
+        productVersion: "1.0",
+        webglContextAttributes: {
+          preserveDrawingBuffer: true,
+          powerPreference: "high-performance",
+          failIfMajorPerformanceCaveat: false
+        },
+        maxWebGLVersion: 2,
+        wasmCodeUrl: buildUrl + "/Builds.wasm",
+        wasmMemoryLimit: 1024 * 1024 * 512, // 512MB
+        wasmStreaming: true,
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
         productName: "WebGL Game",
         productVersion: "0.1",
         webglContextAttributes: {
