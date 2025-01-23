@@ -31,16 +31,19 @@ def serve_static(path):
             response.headers['Content-Type'] = 'application/wasm'
             response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+            response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
             response.headers['Accept-Ranges'] = 'bytes'
             response.headers['Access-Control-Allow-Origin'] = '*'
-            response.cache_control.no_cache = True
-            response.cache_control.max_age = 0
+            response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             response.direct_passthrough = True
         elif path.endswith('.js'):
             response.headers['Content-Type'] = 'application/javascript'
         return response
     except Exception as e:
-        app.logger.error(f"Error serving {path}: {str(e)}")
+        app.logger.error(f"Error serving {path}: {str(e)}", exc_info=True)
+        if path.endswith('.wasm'):
+            app.logger.error(f"WASM file size: {os.path.getsize('static/' + path)} bytes")
         return f"Failed to serve {path}: {str(e)}", 500
 
 @app.route('/controller')
