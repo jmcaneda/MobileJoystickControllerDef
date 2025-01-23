@@ -79,6 +79,17 @@
           failIfMajorPerformanceCaveat: false
         },
         showBanner: unityShowBanner,
+        // Increase memory allocation
+        memory: {
+          initialMemorySize: 32 * 1024 * 1024,  // 32MB
+          maximumMemorySize: 2048 * 1024 * 1024, // 2GB
+        },
+        // Enable caching to improve loading
+        cachingEnabled: true,
+        // Improve WASM loading
+        companyName: "DefaultCompany",
+        productName: "WebGL Game",
+        productVersion: "0.1"
       };
 
       var script = document.createElement("script");
