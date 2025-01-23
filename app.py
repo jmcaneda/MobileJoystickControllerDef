@@ -1,5 +1,9 @@
 import os
 from flask import Flask, render_template, send_from_directory
+import mimetypes
+
+# Add WASM MIME type
+mimetypes.add_type('application/wasm', '.wasm'), send_from_directory
 from flask_socketio import SocketIO, emit
 import logging
 import mimetypes
@@ -12,6 +16,13 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+@app.route('/static/<path:path>')
+def serve_static(path):
+    response = send_from_directory('static', path)
+    if path.endswith('.wasm'):
+        response.headers['Content-Type'] = 'application/wasm'
+    return response
 app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY") or "game_controller_secret"
 socketio = SocketIO(app, cors_allowed_origins="*")
 

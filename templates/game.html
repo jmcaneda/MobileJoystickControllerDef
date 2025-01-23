@@ -37,7 +37,7 @@
         <div id="unity-fullscreen-button"></div>
       </div>
     </div>
-    
+
     <script>
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
@@ -95,7 +95,11 @@
         }).catch((message) => {
           console.error("Unity initialization error:", message);
           loadingBar.style.display = "none";
-          warningBanner.innerHTML = `<div style="background: red; padding: 10px;">Error loading game: ${message}</div>`;
+          var warningBanner = document.querySelector("#unity-warning");
+          if (warningBanner) {
+            warningBanner.style.display = "block";
+            warningBanner.textContent = message;
+          }
         });
       };
       script.onerror = (error) => {
@@ -105,7 +109,7 @@
       };
       document.body.appendChild(script);
     </script>
-    
+
     <div id="qr-container" class="text-center">
         <p class="mb-2">Scan to control:</p>
         <div id="qr-code"></div>
@@ -123,7 +127,7 @@
             qr.make();
             document.getElementById('qr-code').innerHTML = qr.createImgTag(5);
         });
-        
+
         // Listen for socket connection events to hide QR
         window.addEventListener('game-connected', () => {
             document.getElementById('qr-container').style.display = 'none';
