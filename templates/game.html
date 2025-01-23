@@ -61,12 +61,22 @@
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
           progressBarFull.style.width = 100 * progress + "%";
+          console.log("Loading progress: " + Math.round(progress * 100) + "%");
         }).then((unityInstance) => {
           loadingBar.style.display = "none";
+          window.unityInstance = unityInstance;
           window.gameWebSocket.init(unityInstance);
+          console.log("Unity game initialized successfully");
         }).catch((message) => {
-          alert(message);
+          console.error("Unity initialization error:", message);
+          loadingBar.style.display = "none";
+          warningBanner.innerHTML = `<div style="background: red; padding: 10px;">Error loading game: ${message}</div>`;
         });
+      };
+      script.onerror = (error) => {
+        console.error("Error loading Unity loader script:", error);
+        loadingBar.style.display = "none";
+        warningBanner.innerHTML = '<div style="background: red; padding: 10px;">Error loading game resources</div>';
       };
       document.body.appendChild(script);
     </script>
