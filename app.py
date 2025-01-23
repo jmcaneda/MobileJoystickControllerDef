@@ -1,7 +1,11 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 from flask_socketio import SocketIO, emit
 import logging
+import mimetypes
+
+# Add MIME type for WebAssembly
+mimetypes.add_type('application/wasm', '.wasm')
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -14,6 +18,10 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 @app.route('/')
 def index():
     return render_template('game.html')
+
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory('static', path)
 
 @app.route('/controller')
 def controller():
