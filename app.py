@@ -22,6 +22,8 @@ def index():
 @app.route('/static/<path:path>')
 def serve_static(path):
     try:
+        app.logger.info("=== Execution Tracking ===")
+        app.logger.info(f"[Line START] serve_static({path})")
         app.logger.info(f"Attempting to serve static file: {path}")
         
         # Verify file exists
@@ -68,8 +70,11 @@ def serve_static(path):
             app.logger.info("JS headers set successfully")
             
         app.logger.info(f"Successfully serving {path}")
+        app.logger.info("[Line SUCCESS] Last successful line before return")
         return response
     except Exception as e:
+        app.logger.error("=== Error Tracking ===")
+        app.logger.error(f"Last successful line: serve_static - before exception")
         app.logger.error(f"Error serving {path}: {str(e)}", exc_info=True)
         if path.endswith('.wasm'):
             try:
