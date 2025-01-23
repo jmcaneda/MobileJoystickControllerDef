@@ -22,8 +22,20 @@ def index():
 @app.route('/static/<path:path>')
 def serve_static(path):
     try:
+        app.logger.info(f"Attempting to serve static file: {path}")
+        
+        # Verify file exists
+        full_path = os.path.join('static', path)
+        if not os.path.exists(full_path):
+            app.logger.error(f"File not found: {full_path}")
+            return f"File not found: {path}", 404
+            
+        app.logger.info(f"File found: {full_path}")
         response = send_from_directory('static', path)
+        app.logger.info(f"File type: {response.mimetype}")
+        
         if path.endswith('.wasm'):
+            app.logger.info("Processing WASM file")
             response.headers['Content-Type'] = 'application/wasm'
             response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
@@ -33,13 +45,22 @@ def serve_static(path):
             response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
             response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
             response.direct_passthrough = True
+            app.logger.info("WASM headers set successfully")
         elif path.endswith('.js'):
+            app.logger.info("Processing JS file")
             response.headers['Content-Type'] = 'application/javascript'
+            app.logger.info("JS headers set successfully")
+            
+        app.logger.info(f"Successfully serving {path}")
         return response
     except Exception as e:
         app.logger.error(f"Error serving {path}: {str(e)}", exc_info=True)
         if path.endswith('.wasm'):
-            app.logger.error(f"WASM file size: {os.path.getsize('static/' + path)} bytes")
+            try:
+                size = os.path.getsize('static/' + path)
+                app.logger.error(f"WASM file size: {size} bytes")
+            except OSError as ose:
+                app.logger.error(f"Could not get WASM file size: {str(ose)}")
         return f"Failed to serve {path}: {str(e)}", 500
 
 @app.route('/controller')
