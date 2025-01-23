@@ -35,7 +35,11 @@ def serve_static(path):
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
             response.headers['Access-Control-Allow-Origin'] = '*'
             response.headers.pop('Content-Encoding', None)
+            response.headers.pop('Content-Length', None)
             response.direct_passthrough = True
+            response.cache_control.max_age = 0
+            response.cache_control.no_cache = True
+            response.cache_control.must_revalidate = True
         elif path.endswith('.js'):
             response.headers['Content-Type'] = 'application/javascript'
         return response
