@@ -1,4 +1,3 @@
-
 import os
 from flask import Flask, render_template, send_from_directory
 import mimetypes
@@ -30,16 +29,13 @@ def serve_static(path):
         response = send_from_directory('static', path)
         if path.endswith('.wasm'):
             response.headers['Content-Type'] = 'application/wasm'
-            response.headers['Accept-Ranges'] = 'bytes'
             response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+            response.headers['Accept-Ranges'] = 'bytes'
             response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers.pop('Content-Encoding', None)
-            response.headers.pop('Content-Length', None)
-            response.direct_passthrough = True
-            response.cache_control.max_age = 0
             response.cache_control.no_cache = True
-            response.cache_control.must_revalidate = True
+            response.cache_control.max_age = 0
+            response.direct_passthrough = True
         elif path.endswith('.js'):
             response.headers['Content-Type'] = 'application/javascript'
         return response
