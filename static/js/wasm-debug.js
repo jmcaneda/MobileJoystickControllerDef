@@ -19,6 +19,13 @@ window.addEventListener('error', function(e) {
 
 // Monitor WASM download progress
 function monitorWasmDownload(url) {
+    // Check if streaming is supported
+    if (WebAssembly.instantiateStreaming) {
+        console.info('WebAssembly streaming is supported');
+    } else {
+        console.warn('WebAssembly streaming is not supported - falling back to ArrayBuffer');
+    }
+    
     fetch(url)
         .then(response => {
             console.info('=== WASM Download Info ===');
