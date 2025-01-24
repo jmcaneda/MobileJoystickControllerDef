@@ -79,15 +79,20 @@
         productVersion: "1.0",
         showBanner: unityShowBanner,
         webglContextAttributes: {
-          preserveDrawingBuffer: true,
+          preserveDrawingBuffer: false,
           powerPreference: "high-performance",
           failIfMajorPerformanceCaveat: false,
           antialias: false,
-          depth: true
+          depth: true,
+          stencil: true,
+          alpha: false
         },
         maxWebGLVersion: 2,
         wasmMemoryLimit: 512 * 1024 * 1024,
-        devicePixelRatio: 1
+        devicePixelRatio: 1,
+        cacheControl: function(url) {
+          return url.match(/\.data/) ? "must-revalidate" : "no-store";
+        }
       };
 
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
