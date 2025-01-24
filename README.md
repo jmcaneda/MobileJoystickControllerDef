@@ -24,6 +24,7 @@ https://assetstore.unity.com/packages/3d/characters/toony-tiny-people-demo-11318
 https://assetstore.unity.com/packages/3d/vehicles/low-poly-streets-and-cars-pack-292375
 
 Así como los sonidos de nuestro querido Chiquito.
- https://tuna.voicemod.net/user/carloskelok/soundboards/cfd4bffc-d971-43d2-b915-f3c0c8c76c0d
+
+https://tuna.voicemod.net/user/carloskelok/soundboards/cfd4bffc-d971-43d2-b915-f3c0c8c76c0d
 
 Espero que os sea de utilidad. Saludos.
