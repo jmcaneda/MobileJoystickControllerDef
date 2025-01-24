@@ -45,6 +45,8 @@ def serve_static(path):
             response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
             response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers['Accept-Ranges'] = 'bytes'
             response.direct_passthrough = True
         
         elif path.endswith('.js'):
