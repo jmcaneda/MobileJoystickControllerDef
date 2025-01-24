@@ -177,32 +177,68 @@
             document.getElementById('qr-container').style.display = 'none';
         });
 
-        // Monitor and initialize WASM properly
+        // Initialize required imports for WASM
+        const requiredImports = {
+            env: {
+                memory: new WebAssembly.Memory({ 
+                    initial: 256,
+                    maximum: 512,
+                    shared: true
+                }),
+                table: new WebAssembly.Table({ 
+                    initial: 0,
+                    element: 'anyfunc',
+                    maximum: 0
+                }),
+                __memory_base: 0,
+                __table_base: 0,
+                abort: function() {},
+                log_console: function(ptr) {},
+                invoke_ii: function(index, a1) {},
+                invoke_iii: function(index, a1, a2) {},
+                invoke_iiii: function(index, a1, a2, a3) {},
+                invoke_iiiii: function(index, a1, a2, a3, a4) {}
+            },
+            wasi_snapshot_preview1: {
+                proc_exit: function(code) {},
+                fd_write: function() {},
+                fd_read: function() {},
+                fd_seek: function() {},
+                fd_close: function() {}
+            }
+        };
+
+        // Monitor and initialize WASM properly with required imports
         const wasmBinaryFile = "{{ url_for('static', filename='Build/Builds.wasm') }}";
         
-        function loadWasm() {
-            const imports = {
-                env: {
-                    memory: new WebAssembly.Memory({ initial: 256, maximum: 256 }),
-                    table: new WebAssembly.Table({ initial: 0, element: 'anyfunc' })
+        async function loadWasm() {
+            try {
+                if (typeof WebAssembly.instantiateStreaming === 'function') {
+                    const response = await fetch(wasmBinaryFile);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const result = await WebAssembly.instantiateStreaming(response, requiredImports);
+                    console.log("WASM loaded successfully via streaming");
+                    return result.instance;
+                } else {
+                    const response = await fetch(wasmBinaryFile);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const bytes = await response.arrayBuffer();
+                    const result = await WebAssembly.instantiate(bytes, requiredImports);
+                    console.log("WASM loaded successfully via fallback");
+                    return result.instance;
                 }
-            };
-
-            if (typeof WebAssembly.instantiateStreaming === 'function') {
-                WebAssembly.instantiateStreaming(fetch(wasmBinaryFile), imports)
-                    .then(obj => {
-                        console.log("WASM loaded successfully via streaming");
-                    })
-                    .catch(err => {
-                        console.warn("WASM streaming compile failed:", err);
-                        monitorWasmDownload(wasmBinaryFile);
-                    });
-            } else {
-                monitorWasmDownload(wasmBinaryFile);
+            } catch (err) {
+                console.error("WASM loading failed:", err);
+                throw err;
             }
         }
         
-        loadWasm();
+        // Ensure WASM is loaded before continuing
+        loadWasm().catch(error => {
+            console.error("Failed to initialize WASM:", error);
+        });
     </script>
 </body>
 </html>
