@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, send_from_directory, send_from_directory, request, make_response
+from flask import Flask, render_template, send_from_directory, request, make_response
 import mimetypes
 from flask_socketio import SocketIO, emit
 import logging
