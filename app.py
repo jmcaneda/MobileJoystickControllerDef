@@ -27,8 +27,9 @@ def serve_static(path):
         
         if path.endswith('.wasm'):
             response.headers['Content-Type'] = 'application/wasm'
-            response.headers['Cross-Origin-Embedder-Policy'] = 'credentialless'
+            response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+            response.headers['Cross-Origin-Resource-Policy'] = 'same-site'
             response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
             response.headers['Access-Control-Allow-Origin'] = '*'
             response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'

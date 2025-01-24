@@ -200,6 +200,15 @@
                 emscripten_resize_heap: function(requestedSize) {
                     return false; // Return false to indicate allocation failure
                 },
+                emscripten_console_error: function(str) {
+                    console.error(UTF8ToString(str));
+                },
+                emscripten_console_log: function(str) {
+                    console.log(UTF8ToString(str));
+                },
+                emscripten_console_warn: function(str) {
+                    console.warn(UTF8ToString(str));
+                },
                 log_console: function(ptr) {},
                 invoke_ii: function(index, a1) {
                     try { return wasmTable.get(index)(a1) } catch(e) { abort(e) }
