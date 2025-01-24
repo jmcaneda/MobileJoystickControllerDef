@@ -40,6 +40,12 @@ def serve_static(path):
         response.headers['Access-Control-Allow-Headers'] = '*'
         
         if path.endswith('.wasm'):
+            # Proper WASM handling
+            response.headers['Content-Type'] = 'application/wasm'
+            if 'gzip' in request.accept_encodings:
+                response.headers['Content-Encoding'] = 'gzip'
+            response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+            response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
             response.headers['Content-Type'] = 'application/wasm'
             response.headers['Content-Disposition'] = 'attachment; filename=' + path.split('/')[-1]
             response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
