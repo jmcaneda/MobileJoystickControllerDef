@@ -222,24 +222,32 @@
         
         async function loadWasm() {
             try {
-                if (typeof WebAssembly.instantiateStreaming === 'function') {
-                    const response = await fetch(wasmBinaryFile);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    
-                    const result = await WebAssembly.instantiateStreaming(response, requiredImports);
-                    console.log("WASM loaded successfully via streaming");
-                    return result.instance;
-                } else {
-                    const response = await fetch(wasmBinaryFile);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    
-                    const bytes = await response.arrayBuffer();
-                    const result = await WebAssembly.instantiate(bytes, requiredImports);
-                    console.log("WASM loaded successfully via fallback");
-                    return result.instance;
-                }
+                const response = await fetch(wasmBinaryFile);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const bytes = await response.arrayBuffer();
+                
+                // Forzar uso de instantiate en lugar de instantiateStreaming
+                const result = await WebAssembly.instantiate(bytes, {
+                    ...requiredImports,
+                    env: {
+                        ...requiredImports.env,
+                        memory: new WebAssembly.Memory({ 
+                            initial: 256,
+                            maximum: 2048,
+                            shared: false
+                        }),
+                        abort: function(msg, file, line, column) {
+                            console.error('WASM abort:', msg, file, line, column);
+                        }
+                    }
+                });
+                
+                console.log("WASM loaded successfully");
+                return result.instance;
             } catch (err) {
                 console.error("WASM loading failed:", err);
+                console.error("Error details:", err.message);
                 throw err;
             }
         }
