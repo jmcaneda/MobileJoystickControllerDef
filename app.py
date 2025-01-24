@@ -66,6 +66,12 @@ def serve_build(filename):
     response = send_from_directory('static/Build', filename)
     if filename.endswith('.wasm'):
         response.headers['Content-Type'] = 'application/wasm'
+        response.headers['Content-Disposition'] = 'attachment; filename=' + filename
+        response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+        response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+        response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+        response.headers['Cache-Control'] = 'no-cache'
+        response.headers['Accept-Ranges'] = 'bytes'
     return response
 
 @socketio.on('connect')
