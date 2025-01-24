@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Unity Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Unity Game Controller</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='TemplateData/favicon.ico') }}">
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='TemplateData/style.css') }}">
@@ -17,22 +18,28 @@
             background: rgba(0,0,0,0.8);
             padding: 10px;
             border-radius: 5px;
+            z-index: 1000;
         }
+        #unity-footer { background: rgba(0,0,0,0.5); }
+        .unity-mobile #unity-canvas { width: 100%; height: 100% }
+        .unity-mobile #unity-footer { display: none }
     </style>
 </head>
 <body>
     <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
+        <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+        <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+            </div>
         </div>
-      </div>
-      <div id="unity-warning"> </div>
-      <div id="unity-footer">
-        <div id="unity-fullscreen-button"></div>
-      </div>
+        <div id="unity-warning"></div>
+        <div id="unity-footer">
+            <div id="unity-webgl-logo"></div>
+            <div id="unity-fullscreen-button"></div>
+            <div id="unity-build-title">Game Controller</div>
+        </div>
     </div>
 
     <div id="qr-container" class="text-center">
@@ -82,18 +89,7 @@
         showBanner: unityShowBanner,
         matchWebGLToCanvasSize: false,
         devicePixelRatio: 1,
-        powerPreference: "high-performance",
-        wasmMemoryLimit: 256 * 1024 * 1024,
-        webglContextAttributes: {
-          preserveDrawingBuffer: true,
-          powerPreference: "high-performance",
-          failIfMajorPerformanceCaveat: false,
-          antialias: false,
-          depth: true
-        },
-        maxWebGLVersion: 2,
-        wasmMemoryLimit: 512 * 1024 * 1024,
-        devicePixelRatio: 1
+        powerPreference: "high-performance"
       };
 
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
@@ -103,9 +99,6 @@
         document.getElementsByTagName('head')[0].appendChild(meta);
         container.className = "unity-mobile";
         canvas.className = "unity-mobile";
-      } else {
-        canvas.style.width = "960px";
-        canvas.style.height = "600px";
       }
 
       loadingBar.style.display = "block";
@@ -120,6 +113,9 @@
           loadingBar.style.display = "none";
           window.unityInstance = unityInstance;
           window.gameWebSocket.init(unityInstance);
+          fullscreenButton.onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
           console.log("Unity game initialized successfully");
         }).catch((message) => {
           console.error("Unity initialization error:", message);
@@ -131,14 +127,8 @@
         console.error("Error loading Unity loader script:", error);
         unityShowBanner('Error loading game resources', 'error');
       };
-
-      canvas.addEventListener('webglcontextlost', (e) => {
-        e.preventDefault();
-        unityShowBanner('WebGL context lost. Please reload the page.', 'error');
-      }, false);
       document.body.appendChild(script);
 
-      // QR Code Generation
       window.addEventListener('load', () => {
           const controllerUrl = `${window.location.origin}/controller`;
           const qr = qrcode(0, 'M');
