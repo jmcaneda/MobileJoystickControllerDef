@@ -19,7 +19,7 @@ window.addEventListener('error', function(e) {
 // Monitor WASM download progress
 function monitorWasmDownload(url) {
     console.info('Initializing WASM download...');
-
+    
     const checkWasmSupport = () => {
         if (typeof WebAssembly === 'object') {
             return WebAssembly.instantiateStreaming ? 'streaming' : 'fallback';
@@ -30,16 +30,47 @@ function monitorWasmDownload(url) {
     const wasmSupport = checkWasmSupport();
     console.info(`WebAssembly support: ${wasmSupport}`);
 
-    return fetch(url)
-        .then(response => {
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            console.info('WASM file downloaded successfully');
-            return response;
-        })
-        .catch(error => {
-            console.error('Error loading WASM:', error);
-            throw error;
-        });
+    return new Promise((resolve, reject) => {
+        if (wasmSupport === 'unsupported') {
+            reject(new Error('WebAssembly not supported'));
+            return;
+        }
+
+        const fetchPromise = fetch(url);
+        
+        if (wasmSupport === 'streaming') {
+            fetchPromise
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    console.info('WASM streaming compilation starting...');
+                    return WebAssembly.instantiateStreaming(response);
+                })
+                .then(obj => {
+                    console.info('WASM streaming compilation complete');
+                    resolve(obj.instance);
+                })
+                .catch(error => {
+                    console.error('WASM streaming compilation failed:', error);
+                    reject(error);
+                });
+        } else {
+            fetchPromise
+                .then(response => {
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    console.info('WASM file downloaded, starting compilation...');
+                    return response.arrayBuffer();
+                })
+                .then(bytes => WebAssembly.instantiate(bytes))
+                .then(obj => {
+                    console.info('WASM compilation complete');
+                    resolve(obj.instance);
+                })
+                .catch(error => {
+                    console.error('Error loading WASM:', error);
+                    reject(error);
+                });
+        }
+    });
 }
 
 // Export for use in other scripts
