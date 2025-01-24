@@ -254,7 +254,7 @@
         
         // Ensure WASM is loaded before continuing with timeout
         let waitSeconds = 0;
-        const maxWaitTime = 120; // aumentado a 120 segundos de espera
+        const maxWaitTime = 200; // aumentado a 200 segundos de espera
         const waitInterval = setInterval(() => {
             waitSeconds++;
             console.log(`Esperando carga WASM... ${waitSeconds} segundos`);
