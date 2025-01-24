@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, request, make_response
 import mimetypes
 from flask_socketio import SocketIO, emit
 import logging
@@ -15,6 +15,15 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("FLASK_SECRET_KEY") or "game_controller_secret"
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = '*'
+        return response
+
 @app.route('/')
 def index():
     return render_template('game.html')
@@ -25,17 +34,20 @@ def serve_static(path):
         app.logger.info(f"Serving static file: {path}")
         response = send_from_directory('static', path, conditional=True)
         
+        # Set basic CORS headers for all responses
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = '*'
+        
         if path.endswith('.wasm'):
             response.headers['Content-Type'] = 'application/wasm'
+            response.headers['Content-Disposition'] = 'attachment; filename=' + path.split('/')[-1]
             response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
             response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-            response.headers['Access-Control-Allow-Headers'] = '*'
-            response.headers['Cache-Control'] = 'public, max-age=0'
-
-        if path.endswith('.js'):
+            response.direct_passthrough = True
+        
+        elif path.endswith('.js'):
             response.headers['Content-Type'] = 'application/javascript'
         
         return response
