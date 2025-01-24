@@ -24,18 +24,31 @@ def serve_static(path):
     try:
         app.logger.info(f"Serving static file: {path}")
         response = send_from_directory('static', path, conditional=True)
-        if path.endswith('.wasm') or path.endswith('.wasm.br'):
+        
+        if path.endswith('.wasm'):
             response.headers['Content-Type'] = 'application/wasm'
-            response.headers['Content-Encoding'] = 'br' if path.endswith('.br') else None
-        elif path.endswith('.br'):
-            if path.endswith('.js.br'):
-                response.headers['Content-Type'] = 'application/javascript'
-            elif path.endswith('.data.br'):
-                response.headers['Content-Type'] = 'application/octet-stream'
-            response.headers['Content-Encoding'] = 'br'
-        elif path.endswith('.js'):
-            response.headers['Content-Type'] = 'application/javascript'
+            response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+            response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+            response.headers['Cross-Origin-Resource-Policy'] = 'same-site'
+            response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = '*'
+            response.headers['Cache-Control'] = 'no-cache, must-revalidate'
+        
+        if path.endswith('.wasm'):
+            response.headers['Content-Type'] = 'application/wasm'
+            response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+            response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+            response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+            response.headers['Cache-Control'] = 'no-cache'
 
+        if path.endswith('.js'):
+            response.headers['Content-Type'] = 'application/javascript'
+        
         return response
     except Exception as e:
         app.logger.error(f"Error serving {path}: {str(e)}")
@@ -66,6 +79,3 @@ def handle_control_event(data):
 @socketio.on_error()
 def error_handler(e):
     app.logger.error(f'SocketIO error: {str(e)}')
-
-if __name__ == '__main__':
-    socketio.run(app, debug=True)
