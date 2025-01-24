@@ -197,6 +197,9 @@
                 emscripten_memcpy_big: function(dest, src, num) {
                     HEAPU8.copyWithin(dest, src, src + num);
                 },
+                emscripten_resize_heap: function(requestedSize) {
+                    return false; // Return false to indicate allocation failure
+                },
                 log_console: function(ptr) {},
                 invoke_ii: function(index, a1) {
                     try { return wasmTable.get(index)(a1) } catch(e) { abort(e) }
