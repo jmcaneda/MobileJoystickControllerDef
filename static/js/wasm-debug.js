@@ -1,3 +1,12 @@
+
+window.addEventListener('unhandledrejection', function(e) {
+    if (e.reason && e.reason.toString().includes('wasm')) {
+        console.error('WASM Loading Error:', e.reason);
+        console.log('Attempting reload...');
+        setTimeout(() => window.location.reload(), 1000);
+    }
+});
+
 // WASM Loading Debug Helper
 window.addEventListener('error', function(e) {
     if (e.message.includes('wasm')) {

@@ -29,22 +29,11 @@ def serve_static(path):
             response.headers['Content-Type'] = 'application/wasm'
             response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
-            response.headers['Cross-Origin-Resource-Policy'] = 'same-site'
             response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
             response.headers['Access-Control-Allow-Origin'] = '*'
             response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
             response.headers['Access-Control-Allow-Headers'] = '*'
-            response.headers['Cache-Control'] = 'no-cache, must-revalidate'
-        
-        if path.endswith('.wasm'):
-            response.headers['Content-Type'] = 'application/wasm'
-            response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
-            response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
-            response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
-            response.headers['Access-Control-Allow-Origin'] = '*'
-            response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-            response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
-            response.headers['Cache-Control'] = 'no-cache'
+            response.headers['Cache-Control'] = 'public, max-age=0'
 
         if path.endswith('.js'):
             response.headers['Content-Type'] = 'application/javascript'
