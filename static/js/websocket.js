@@ -34,7 +34,11 @@ class GameWebSocket {
     }
 
     handleGameControl(data) {
-        if (!this.gameInstance) return;
+        if (!this.gameInstance) {
+            console.warn('Game instance not ready, retrying connection...');
+            setTimeout(() => this.socket.connect(), 1000);
+            return;
+        }
 
         // Send the control data to Unity
         switch(data.type) {
