@@ -254,7 +254,7 @@
         
         // Ensure WASM is loaded before continuing with timeout
         let waitSeconds = 0;
-        const maxWaitTime = 30; // máximo 30 segundos de espera
+        const maxWaitTime = 120; // aumentado a 120 segundos de espera
         const waitInterval = setInterval(() => {
             waitSeconds++;
             console.log(`Esperando carga WASM... ${waitSeconds} segundos`);
@@ -262,9 +262,14 @@
             if (waitSeconds >= maxWaitTime) {
                 clearInterval(waitInterval);
                 console.error("Tiempo de espera agotado para carga WASM");
+                location.reload(); // Intenta recargar automáticamente
                 return;
             }
         }, 1000);
+
+        // Añadir retry para la carga
+        let retryCount = 0;
+        const maxRetries = 3;
 
         loadWasm()
             .then(() => {
