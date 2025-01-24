@@ -244,10 +244,29 @@
             }
         }
         
-        // Ensure WASM is loaded before continuing
-        loadWasm().catch(error => {
-            console.error("Failed to initialize WASM:", error);
-        });
+        // Ensure WASM is loaded before continuing with timeout
+        let waitSeconds = 0;
+        const maxWaitTime = 30; // máximo 30 segundos de espera
+        const waitInterval = setInterval(() => {
+            waitSeconds++;
+            console.log(`Esperando carga WASM... ${waitSeconds} segundos`);
+            
+            if (waitSeconds >= maxWaitTime) {
+                clearInterval(waitInterval);
+                console.error("Tiempo de espera agotado para carga WASM");
+                return;
+            }
+        }, 1000);
+
+        loadWasm()
+            .then(() => {
+                clearInterval(waitInterval);
+                console.log("WASM cargado exitosamente después de", waitSeconds, "segundos");
+            })
+            .catch(error => {
+                clearInterval(waitInterval);
+                console.error("Failed to initialize WASM:", error);
+            });
     </script>
 </body>
 </html>
