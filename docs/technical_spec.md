@@ -7,18 +7,21 @@
    - Gestiona las conexiones WebSocket
    - Enruta los eventos entre dispositivos móviles y Unity
    - Implementa el protocolo de comunicación
+   - Sistema de logging para debugging
 
 2. **Controlador Móvil (Frontend)**
-   - Interfaz táctil responsiva
+   - Interfaz táctil responsiva 
    - Joystick virtual y botones direccionales
    - Toggle para método de entrada (Touch/Keyboard)
    - Conexión WebSocket en tiempo real
 
 3. **Cliente Unity (WebGL)**
-   - Integración con WebSocket
+   - Integración WebSocket bidireccional
    - Sistema dual de entrada (Touch/Keyboard)
    - Sistema de movimiento NavMesh
-   - Animaciones del personaje
+   - Memoria WASM limitada a 512MB
+   - Sistema de caché IndexedDB para assets
+   - Carga progresiva con feedback visual
 
 ### Diagrama de Flujo de Datos
 ```
@@ -35,7 +38,11 @@
 #### 1. Conexión
 ```javascript
 {
-    "data": "Connected"
+    "type": "connection",
+    "data": {
+        "clientType": "unity|controller",
+        "status": "connected"
+    }
 }
 ```
 
@@ -63,17 +70,6 @@
 }
 ```
 
-#### 4. Método de Entrada
-```javascript
-{
-    "type": "inputMethod",
-    "data": {
-        "state": string  // "on", "off"
-    },
-    "timestamp": long
-}
-```
-
 ## Sistema de Control
 
 ### Modos de Entrada
@@ -86,67 +82,30 @@
    - WASD o flechas para movimiento
    - Teclas configurables para acciones
 
-### Estados del Control
-- Conectado/Desconectado
-- Método de entrada activo
-- Estado de botones
-- Posición del joystick
+## Configuración WebGL
 
-## Integración con Unity
+### Memoria y Rendimiento
+- Límite de memoria WASM: 512MB
+- Caché IndexedDB para assets
+- Antialiasing: Desactivado
+- Profundidad: Activada
+- Preferencia de rendimiento: Alto rendimiento
 
-### Componentes Principales
-1. **PlayerController**
-   - Control de movimiento
-   - Gestión de animaciones
-   - Sistema NavMesh
-   - Manejo dual de entrada
+### Optimizaciones
+1. **Carga**
+   - Barra de progreso visual
+   - Carga progresiva de assets
+   - Sistema de caché para builds
+   - Validación de recursos
 
-2. **GameManager**
-   - Control de estado del juego
-   - Gestión de modo de entrada
-   - Configuración del sistema
+2. **Runtime**
+   - Memoria preconfigurada para rendimiento
+   - Configuración de bloques de memoria
+   - Profiler integrado
+   - Sistema de logs detallado
 
-
-## Consideraciones de Rendimiento
-
-### Latencia
-- Tiempo de respuesta objetivo: <100ms
-- Buffer de entrada: 3 frames
-- Interpolación de movimiento suave
-
-### Optimización
-1. **WebSocket**
-   - Compresión de payload
-   - Rate limiting: 60fps
-   - Buffer de eventos
-
-2. **Unity WebGL**
-   - Memoria heap: 512MB
-   - Compresión de texturas
-   - Optimización de físicas
-
-## Depuración
-
-### Herramientas
-1. **Browser DevTools**
-   - Network tab para WebSocket
-   - Console para logs
-
-2. **Unity Debug**
-   - Debug.Log para eventos
-   - Visual feedback en GameObject
-
-### Códigos de Error Comunes
-| Código | Descripción | Solución |
-|--------|-------------|----------|
-| WS001  | Conexión perdida | Reconexión automática |
-| WS002  | Datos malformados | Validación de JSON |
-| UN001  | Script no encontrado | Verificar GameObject |
-
-## Seguridad
-
-### Consideraciones
-1. SSL/TLS para WebSocket
-2. Validación de inputs
-3. Rate limiting por cliente
-4. Sanitización de datos JSON
+## Seguridad y Monitoreo
+- Debug incorporado para WASM
+- Sistema de logging multinivel
+- Manejo de errores con feedback visual
+- Validación de recursos y conexiones

@@ -1,99 +1,84 @@
-
 # WebSocket Implementation Documentation
 
 ## Overview
-Este proyecto implementa una comunicación bidireccional en tiempo real entre un controlador móvil y un juego Unity WebGL utilizando WebSocket como protocolo de comunicación.
+Este proyecto implementa una comunicación bidireccional en tiempo real entre un controlador móvil y un juego Unity WebGL usando WebSocket.
 
 ## Arquitectura WebSocket
 
 ### Componentes Principales
 1. **Servidor WebSocket (app.py)**
    - Implementado con Flask-SocketIO
-   - Gestiona conexiones y desconexiones
-   - Retransmite eventos entre el controlador y Unity
+   - Sistema de logging DEBUG
+   - Identificación de tipo de cliente
+   - Gestión de conexiones múltiples
 
 2. **Cliente Controlador (controller.js)**
-   - Implementa la interfaz de usuario del controlador
-   - Captura eventos táctiles y de botones
-   - Emite eventos WebSocket al servidor
+   - Interfaz de usuario responsiva
+   - Emisión de eventos WebSocket
+   - Sistema de reconexión automática
 
 3. **Cliente Unity (websocket.js)**
-   - Recibe eventos del servidor
-   - Comunica con el juego Unity via SendMessage
-   - Gestiona la conexión WebSocket del lado del juego
+   - Integración con Unity WebGL
+   - Sistema de caché para recursos
+   - Logging detallado de progreso
 
-## Flujo de Datos
+## Debug y Logging
 
-### Eventos del Controlador
-1. **Joystick Virtual**
-   ```javascript
-   {
-       "type": "joystick",
-       "data": {
-           "x": float,  // -1.0 a 1.0
-           "y": float   // -1.0 a 1.0
-       },
-       "timestamp": long
-   }
-   ```
+### Servidor
+```python
+DEBUG:app:Client connected
+DEBUG:app:Client type: unity
+```
 
-2. **Botones de Control**
-   ```javascript
-   {
-       "type": "button",
-       "data": {
-           "action": string,  // "up", "down", "left", "right", "A", "B"
-           "state": string    // "pressed", "released"
-       },
-       "timestamp": long
-   }
-   ```
+### Cliente Unity
+```javascript
+"Loading progress: X%" // Progreso de carga
+"[UnityCache] Resource revalidation" // Estado de caché
+"navigator.mediaDevices support" // Estado de dispositivos
+```
 
-3. **Método de Entrada**
-   ```javascript
-   {
-       "type": "inputMethod",
-       "data": {
-           "state": string    // "on", "off"
-       },
-       "timestamp": long
-   }
-   ```
+## Eventos del Sistema
 
-## Implementación Detallada
+### Conexión
+```javascript
+{
+    "type": "connection",
+    "clientType": "unity|controller",
+    "status": "connected|disconnected"
+}
+```
 
-### Servidor (app.py)
-- Maneja eventos de conexión/desconexión
-- Retransmite eventos del controlador
-- Implementa logging para debugging
-- Usa CORS para permitir conexiones desde diferentes orígenes
+### Control
+```javascript
+{
+    "type": "input",
+    "source": "touch|keyboard",
+    "data": {
+        // datos específicos del input
+    }
+}
+```
 
-### Cliente Controlador (controller.js)
-- Establece conexión WebSocket al cargar
-- Normaliza inputs del joystick
-- Gestiona estado de botones
-- Implementa feedback visual de conexión
+## Optimizaciones
 
-### Cliente Unity (websocket.js)
-- Se inicializa con la instancia del juego Unity
-- Traduce eventos WebSocket a llamadas Unity
-- Mantiene estado de conexión
-- Gestiona reconexión automática
+### Caché
+- Sistema IndexedDB para recursos
+- Revalidación automática de assets
+- Persistencia de datos de build
 
-## Consideraciones de Seguridad
-- Validación de inputs en el servidor
-- Sanitización de datos JSON
-- Rate limiting implícito por WebSocket
-- Control de origen de conexiones
+### Rendimiento
+- Logging detallado de progreso
+- Sistema de reconexión automática
+- Validación de recursos en caché
+
+## Monitoreo
+- Debug logs en servidor
+- Progreso de carga en cliente
+- Estado de dispositivos
+- Validación de caché
 
 ## Gestión de Errores
+- Logging multinivel
+- Revalidación de recursos
+- Feedback visual de estados
 - Reconexión automática
-- Logging de errores
-- Feedback visual al usuario
-- Validación de datos
-
-## Optimización
-- Mensajes compactos
-- Rate limiting natural
-- Buffering de eventos rápidos
-- Priorización de eventos críticos
