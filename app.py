@@ -28,6 +28,8 @@ def serve_static(path):
         if path.endswith('.wasm'):
             response.headers['Content-Type'] = 'application/wasm'
             response.headers['Content-Disposition'] = 'attachment; filename=Builds.wasm'
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers['Accept-Ranges'] = 'bytes'
             response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
             response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
             response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'

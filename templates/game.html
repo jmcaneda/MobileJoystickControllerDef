@@ -95,6 +95,12 @@
         },
         devicePixelRatio: 1,
         showBanner: unityShowBanner,
+        cacheControl: function (url) {
+            return url.match(/\.data/) ? "must-revalidate" : "no-store";
+        },
+        companyName: "DefaultCompany",
+        productName: "WebGLGame",
+        productVersion: "1.0",
         cachingBypassMode: false,
         maxWebGLVersion: 2,
         wasmCodeUrl: buildUrl + "/Builds.wasm",
@@ -102,7 +108,7 @@
         wasmStreaming: true,
         // Increase memory allocation
         memory: {
-          initialMemorySize: 32 * 1024 * 1024,  // 32MB
+          initialMemorySize: 64 * 1024 * 1024,  // 64MB
           maximumMemorySize: 2048 * 1024 * 1024, // 2GB
         },
         // Enable caching to improve loading

@@ -1,4 +1,3 @@
-
 // WASM Loading Debug Helper
 window.addEventListener('error', function(e) {
     if (e.message.includes('wasm')) {
@@ -19,22 +18,29 @@ window.addEventListener('error', function(e) {
 
 // Monitor WASM download progress
 function monitorWasmDownload(url) {
-    // Check if streaming is supported
-    if (WebAssembly.instantiateStreaming) {
-        console.info('WebAssembly streaming is supported');
-    } else {
-        console.warn('WebAssembly streaming is not supported - falling back to ArrayBuffer');
-    }
-    
-    fetch(url)
+    console.info('Initializing WASM download...');
+
+    const checkWasmSupport = () => {
+        if (typeof WebAssembly === 'object') {
+            return WebAssembly.instantiateStreaming ? 'streaming' : 'fallback';
+        }
+        return 'unsupported';
+    };
+
+    const wasmSupport = checkWasmSupport();
+    console.info(`WebAssembly support: ${wasmSupport}`);
+
+    return fetch(url)
         .then(response => {
-            console.info('=== WASM Download Info ===');
-            console.info('Status:', response.status);
-            console.info('Content-Type:', response.headers.get('content-type'));
-            console.info('Content-Length:', response.headers.get('content-length'));
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            console.info('WASM file downloaded successfully');
             return response;
         })
         .catch(error => {
-            console.error('WASM Download Error:', error);
+            console.error('Error loading WASM:', error);
+            throw error;
         });
 }
+
+// Export for use in other scripts
+window.monitorWasmDownload = monitorWasmDownload;
