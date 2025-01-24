@@ -192,7 +192,12 @@
                 }),
                 __memory_base: 0,
                 __table_base: 0,
-                abort: function() {},
+                abort: function(msg, file, line, column) {
+                    console.error('WASM abort:', msg, file, line, column);
+                },
+                exit: function(status) {
+                    console.log('WASM exit with status:', status);
+                },
                 emscripten_notify_memory_growth: function() {},
                 emscripten_memcpy_big: function(dest, src, num) {
                     HEAPU8.copyWithin(dest, src, src + num);
@@ -251,6 +256,9 @@
                         }),
                         abort: function(msg, file, line, column) {
                             console.error('WASM abort:', msg, file, line, column);
+                        },
+                        exit: function(status) {
+                            console.log('WASM exit with status:', status);
                         }
                     }
                 });
