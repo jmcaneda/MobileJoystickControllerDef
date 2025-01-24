@@ -5,14 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unity Game</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
-
     <link rel="stylesheet" href="{{ url_for('static', filename='TemplateData/style.css') }}">
-
     <style>
-        #unity-container {
-            width: 100%;
-            height: 100vh;
-        }
+        #unity-container { width: 100%; height: 100vh; }
         #qr-container {
             position: fixed;
             top: 10px;
@@ -25,7 +20,7 @@
 </head>
 <body>
     <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600></canvas>
+      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
         <div id="unity-progress-bar-empty">
@@ -38,16 +33,24 @@
       </div>
     </div>
 
+    <div id="qr-container" class="text-center">
+        <p class="mb-2">Scan to control:</p>
+        <div id="qr-code"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="{{ url_for('static', filename='js/websocket.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/wasm-debug.js') }}"></script>
     <script>
       var container = document.querySelector("#unity-container");
       var canvas = document.querySelector("#unity-canvas");
       var loadingBar = document.querySelector("#unity-loading-bar");
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var warningBanner = document.querySelector("#unity-warning");
 
-      var buildUrl = "{{ url_for('static', filename='Build') }}";
       function unityShowBanner(msg, type) {
-        var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
           warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
         }
@@ -65,32 +68,16 @@
         updateBannerVisibility();
       }
 
+      var buildUrl = "{{ url_for('static', filename='Build') }}";
       var config = {
         dataUrl: buildUrl + "/Builds.data",
         frameworkUrl: buildUrl + "/Builds.framework.js",
         codeUrl: buildUrl + "/Builds.wasm",
         streamingAssetsUrl: "StreamingAssets",
-        preloadedAssets: [],
         companyName: "DefaultCompany",
         productName: "WebGLGame",
         productVersion: "1.0",
         showBanner: unityShowBanner,
-        companyName: "DefaultCompany",
-        productName: "WebGLGame",
-        productVersion: "1.0",
-        webglContextAttributes: {
-          preserveDrawingBuffer: true,
-          powerPreference: "high-performance",
-          failIfMajorPerformanceCaveat: false
-        },
-        maxWebGLVersion: 2,
-        wasmCodeUrl: buildUrl + "/Builds.wasm",
-        wasmMemoryLimit: 1024 * 1024 * 512, // 512MB
-        wasmStreaming: true,
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "DefaultCompany",
-        productName: "WebGL Game",
-        productVersion: "0.1",
         webglContextAttributes: {
           preserveDrawingBuffer: true,
           powerPreference: "high-performance",
@@ -98,31 +85,24 @@
           antialias: false,
           depth: true
         },
-        devicePixelRatio: 1,
-        showBanner: unityShowBanner,
-        cacheControl: function (url) {
-            return url.match(/\.data/) ? "must-revalidate" : "no-store";
-        },
-        companyName: "DefaultCompany",
-        productName: "WebGLGame",
-        productVersion: "1.0",
-        cachingBypassMode: false,
         maxWebGLVersion: 2,
-        wasmCodeUrl: buildUrl + "/Builds.wasm",
-        wasmMemoryLimit: 1024 * 1024 * 512, // 512MB
-        wasmStreaming: true,
-        // Increase memory allocation
-        memory: {
-          initialMemorySize: 64 * 1024 * 1024,  // 64MB
-          maximumMemorySize: 2048 * 1024 * 1024, // 2GB
-        },
-        // Enable caching to improve loading
-        cachingEnabled: true,
-        // Improve WASM loading
-        companyName: "DefaultCompany",
-        productName: "WebGL Game",
-        productVersion: "0.1"
+        wasmMemoryLimit: 512 * 1024 * 1024,
+        devicePixelRatio: 1
       };
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        container.className = "unity-mobile";
+        canvas.className = "unity-mobile";
+      } else {
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
+      }
+
+      loadingBar.style.display = "block";
 
       var script = document.createElement("script");
       script.src = buildUrl + "/Builds.loader.js";
@@ -137,169 +117,28 @@
           console.log("Unity game initialized successfully");
         }).catch((message) => {
           console.error("Unity initialization error:", message);
-          loadingBar.style.display = "none";
-          var warningBanner = document.querySelector("#unity-warning");
-          if (warningBanner) {
-            warningBanner.style.display = "block";
-            warningBanner.textContent = message;
-          }
+          unityShowBanner('Error: ' + message, 'error');
         });
       };
+
       script.onerror = (error) => {
         console.error("Error loading Unity loader script:", error);
-        loadingBar.style.display = "none";
-        warningBanner.innerHTML = '<div style="background: red; padding: 10px;">Error loading game resources</div>';
+        unityShowBanner('Error loading game resources', 'error');
       };
       document.body.appendChild(script);
-    </script>
 
-    <div id="qr-container" class="text-center">
-        <p class="mb-2">Scan to control:</p>
-        <div id="qr-code"></div>
-    </div>
+      // QR Code Generation
+      window.addEventListener('load', () => {
+          const controllerUrl = `${window.location.origin}/controller`;
+          const qr = qrcode(0, 'M');
+          qr.addData(controllerUrl);
+          qr.make();
+          document.getElementById('qr-code').innerHTML = qr.createImgTag(5);
+      });
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
-    <script src="{{ url_for('static', filename='js/websocket.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/wasm-debug.js') }}"></script>
-    <script>
-        // Generate QR code for controller
-        window.addEventListener('load', () => {
-            const controllerUrl = `${window.location.origin}/controller`;
-            const qr = qrcode(0, 'M');
-            qr.addData(controllerUrl);
-            qr.make();
-            document.getElementById('qr-code').innerHTML = qr.createImgTag(5);
-        });
-
-        // Listen for socket connection events to hide QR
-        window.addEventListener('game-connected', () => {
-            document.getElementById('qr-container').style.display = 'none';
-        });
-
-        // Initialize required imports for WASM with Unity specific imports
-        const requiredImports = {
-            env: {
-                memory: new WebAssembly.Memory({ 
-                    initial: 512,
-                    maximum: 4096,
-                    shared: false
-                }),
-                table: new WebAssembly.Table({ 
-                    initial: 1024,
-                    element: 'anyfunc',
-                    maximum: 65536
-                }),
-                __memory_base: 0,
-                __table_base: 0,
-                abort: function(msg, file, line, column) {
-                    console.error('WASM abort:', msg, file, line, column);
-                },
-                exit: function(status) {
-                    console.log('WASM exit with status:', status);
-                },
-                emscripten_notify_memory_growth: function() {},
-                emscripten_memcpy_big: function(dest, src, num) {
-                    HEAPU8.copyWithin(dest, src, src + num);
-                },
-                emscripten_resize_heap: function(requestedSize) {
-                    return false; // Return false to indicate allocation failure
-                },
-                emscripten_console_error: function(str) {
-                    console.error(UTF8ToString(str));
-                },
-                emscripten_console_log: function(str) {
-                    console.log(UTF8ToString(str));
-                },
-                emscripten_console_warn: function(str) {
-                    console.warn(UTF8ToString(str));
-                },
-                log_console: function(ptr) {},
-                invoke_ii: function(index, a1) {
-                    try { return wasmTable.get(index)(a1) } catch(e) { abort(e) }
-                },
-                invoke_iii: function(index, a1, a2) {
-                    try { return wasmTable.get(index)(a1, a2) } catch(e) { abort(e) }
-                },
-                invoke_iiii: function(index, a1, a2, a3) {
-                    try { return wasmTable.get(index)(a1, a2, a3) } catch(e) { abort(e) }
-                }
-            },
-            wasi_snapshot_preview1: {
-                proc_exit: function(code) { },
-                fd_write: function() { return 0; },
-                fd_read: function() { return 0; },
-                fd_seek: function() { return 0; },
-                fd_close: function() { return 0; }
-            }
-        };
-
-        // Monitor and initialize WASM properly with required imports
-        const wasmBinaryFile = "{{ url_for('static', filename='Build/Builds.wasm') }}";
-
-        async function loadWasm() {
-            try {
-                const response = await fetch(wasmBinaryFile);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-                const bytes = await response.arrayBuffer();
-
-                // Forzar uso de instantiate en lugar de instantiateStreaming
-                const result = await WebAssembly.instantiate(bytes, {
-                    ...requiredImports,
-                    env: {
-                        ...requiredImports.env,
-                        memory: new WebAssembly.Memory({ 
-                            initial: 512,
-                            maximum: 4096,
-                            shared: false
-                        }),
-                        abort: function(msg, file, line, column) {
-                            console.error('WASM abort:', msg, file, line, column);
-                        },
-                        exit: function(status) {
-                            console.log('WASM exit with status:', status);
-                        }
-                    }
-                });
-
-                console.log("WASM loaded successfully");
-                return result.instance;
-            } catch (err) {
-                console.error("WASM loading failed:", err);
-                console.error("Error details:", err.message);
-                throw err;
-            }
-        }
-
-        // Ensure WASM is loaded before continuing with timeout
-        let waitSeconds = 0;
-        const maxWaitTime = 200; // aumentado a 200 segundos de espera
-        const waitInterval = setInterval(() => {
-            waitSeconds++;
-            console.log(`Esperando carga WASM... ${waitSeconds} segundos`);
-
-            if (waitSeconds >= maxWaitTime) {
-                clearInterval(waitInterval);
-                console.error("Tiempo de espera agotado para carga WASM");
-                location.reload(); // Intenta recargar automáticamente
-                return;
-            }
-        }, 1000);
-
-        // Añadir retry para la carga
-        let retryCount = 0;
-        const maxRetries = 6;
-
-        loadWasm()
-            .then(() => {
-                clearInterval(waitInterval);
-                console.log("WASM cargado exitosamente después de", waitSeconds, "segundos");
-            })
-            .catch(error => {
-                clearInterval(waitInterval);
-                console.error("Failed to initialize WASM:", error);
-            });
+      window.addEventListener('game-connected', () => {
+          document.getElementById('qr-container').style.display = 'none';
+      });
     </script>
 </body>
 </html>
