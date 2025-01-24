@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, send_from_directory, request, make_response
+from flask import Flask, render_template, send_from_directory, send_from_directory, request, make_response
 import mimetypes
 from flask_socketio import SocketIO, emit
 import logging
@@ -58,6 +58,13 @@ def serve_static(path):
 @app.route('/controller')
 def controller():
     return render_template('controller.html')
+
+@app.route('/static/Build/<path:filename>')
+def serve_build(filename):
+    response = send_from_directory('static/Build', filename)
+    if filename.endswith('.wasm'):
+        response.headers['Content-Type'] = 'application/wasm'
+    return response
 
 @socketio.on('connect')
 def handle_connect():
