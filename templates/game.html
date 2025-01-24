@@ -131,6 +131,11 @@
         console.error("Error loading Unity loader script:", error);
         unityShowBanner('Error loading game resources', 'error');
       };
+
+      canvas.addEventListener('webglcontextlost', (e) => {
+        e.preventDefault();
+        unityShowBanner('WebGL context lost. Please reload the page.', 'error');
+      }, false);
       document.body.appendChild(script);
 
       // QR Code Generation

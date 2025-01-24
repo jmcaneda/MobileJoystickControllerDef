@@ -73,9 +73,13 @@ def handle_disconnect():
 
 @socketio.on('control_event')
 def handle_control_event(data):
-    app.logger.debug(f'Received control event: {data}')
-    # Broadcast the control event to all connected clients (including Unity)
-    emit('game_control', data, broadcast=True)
+    try:
+        app.logger.debug(f'Received control event: {data}')
+        # Broadcast the control event to all connected clients (including Unity)
+        emit('game_control', data, broadcast=True)
+    except Exception as e:
+        app.logger.error(f'Error handling control event: {str(e)}')
+        emit('error', {'message': 'Failed to process control event'})
 
 @socketio.on_error()
 def error_handler(e):
