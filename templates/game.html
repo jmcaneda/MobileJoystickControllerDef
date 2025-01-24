@@ -177,8 +177,32 @@
             document.getElementById('qr-container').style.display = 'none';
         });
 
-        // Monitor WASM file loading
-        monitorWasmDownload("{{ url_for('static', filename='Build/Builds.wasm') }}");
+        // Monitor and initialize WASM properly
+        const wasmBinaryFile = "{{ url_for('static', filename='Build/Builds.wasm') }}";
+        
+        function loadWasm() {
+            const imports = {
+                env: {
+                    memory: new WebAssembly.Memory({ initial: 256, maximum: 256 }),
+                    table: new WebAssembly.Table({ initial: 0, element: 'anyfunc' })
+                }
+            };
+
+            if (typeof WebAssembly.instantiateStreaming === 'function') {
+                WebAssembly.instantiateStreaming(fetch(wasmBinaryFile), imports)
+                    .then(obj => {
+                        console.log("WASM loaded successfully via streaming");
+                    })
+                    .catch(err => {
+                        console.warn("WASM streaming compile failed:", err);
+                        monitorWasmDownload(wasmBinaryFile);
+                    });
+            } else {
+                monitorWasmDownload(wasmBinaryFile);
+            }
+        }
+        
+        loadWasm();
     </script>
 </body>
 </html>
