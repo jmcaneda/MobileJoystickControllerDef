@@ -182,7 +182,7 @@
             env: {
                 memory: new WebAssembly.Memory({ 
                     initial: 512,
-                    maximum: 2048,
+                    maximum: 4096,
                     shared: false
                 }),
                 table: new WebAssembly.Table({ 
@@ -231,22 +231,22 @@
 
         // Monitor and initialize WASM properly with required imports
         const wasmBinaryFile = "{{ url_for('static', filename='Build/Builds.wasm') }}";
-        
+
         async function loadWasm() {
             try {
                 const response = await fetch(wasmBinaryFile);
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
+
                 const bytes = await response.arrayBuffer();
-                
+
                 // Forzar uso de instantiate en lugar de instantiateStreaming
                 const result = await WebAssembly.instantiate(bytes, {
                     ...requiredImports,
                     env: {
                         ...requiredImports.env,
                         memory: new WebAssembly.Memory({ 
-                            initial: 256,
-                            maximum: 2048,
+                            initial: 512,
+                            maximum: 4096,
                             shared: false
                         }),
                         abort: function(msg, file, line, column) {
@@ -254,7 +254,7 @@
                         }
                     }
                 });
-                
+
                 console.log("WASM loaded successfully");
                 return result.instance;
             } catch (err) {
@@ -263,14 +263,14 @@
                 throw err;
             }
         }
-        
+
         // Ensure WASM is loaded before continuing with timeout
         let waitSeconds = 0;
         const maxWaitTime = 200; // aumentado a 200 segundos de espera
         const waitInterval = setInterval(() => {
             waitSeconds++;
             console.log(`Esperando carga WASM... ${waitSeconds} segundos`);
-            
+
             if (waitSeconds >= maxWaitTime) {
                 clearInterval(waitInterval);
                 console.error("Tiempo de espera agotado para carga WASM");
