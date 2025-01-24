@@ -177,34 +177,43 @@
             document.getElementById('qr-container').style.display = 'none';
         });
 
-        // Initialize required imports for WASM
+        // Initialize required imports for WASM with Unity specific imports
         const requiredImports = {
             env: {
                 memory: new WebAssembly.Memory({ 
-                    initial: 256,
-                    maximum: 512,
-                    shared: true
+                    initial: 512,
+                    maximum: 2048,
+                    shared: false
                 }),
                 table: new WebAssembly.Table({ 
-                    initial: 0,
+                    initial: 1024,
                     element: 'anyfunc',
-                    maximum: 0
+                    maximum: 65536
                 }),
                 __memory_base: 0,
                 __table_base: 0,
                 abort: function() {},
+                emscripten_notify_memory_growth: function() {},
+                emscripten_memcpy_big: function(dest, src, num) {
+                    HEAPU8.copyWithin(dest, src, src + num);
+                },
                 log_console: function(ptr) {},
-                invoke_ii: function(index, a1) {},
-                invoke_iii: function(index, a1, a2) {},
-                invoke_iiii: function(index, a1, a2, a3) {},
-                invoke_iiiii: function(index, a1, a2, a3, a4) {}
+                invoke_ii: function(index, a1) {
+                    try { return wasmTable.get(index)(a1) } catch(e) { abort(e) }
+                },
+                invoke_iii: function(index, a1, a2) {
+                    try { return wasmTable.get(index)(a1, a2) } catch(e) { abort(e) }
+                },
+                invoke_iiii: function(index, a1, a2, a3) {
+                    try { return wasmTable.get(index)(a1, a2, a3) } catch(e) { abort(e) }
+                }
             },
             wasi_snapshot_preview1: {
-                proc_exit: function(code) {},
-                fd_write: function() {},
-                fd_read: function() {},
-                fd_seek: function() {},
-                fd_close: function() {}
+                proc_exit: function(code) { },
+                fd_write: function() { return 0; },
+                fd_read: function() { return 0; },
+                fd_seek: function() { return 0; },
+                fd_close: function() { return 0; }
             }
         };
 
