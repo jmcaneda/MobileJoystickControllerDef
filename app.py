@@ -69,17 +69,25 @@ def controller():
 
 @app.route('/static/Build/<path:filename>')
 def serve_build(filename):
-    response = send_from_directory('static/Build', filename)
-    if filename.endswith('.wasm'):
-        # Clear any existing content encoding
-        if 'Content-Encoding' in response.headers:
-            del response.headers['Content-Encoding']
-        response.headers['Content-Type'] = 'application/wasm'
-        response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
-        response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
-        # Remove unnecessary headers that might interfere
-        response.direct_passthrough = True
-    return response
+    try:
+        response = send_from_directory('static/Build', filename)
+        if filename.endswith('.wasm'):
+            response.headers['Content-Type'] = 'application/wasm'
+            response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
+            response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
+            response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+            response.headers['Cache-Control'] = 'no-cache'
+            response.headers['Accept-Ranges'] = 'bytes'
+            # Asegurarse de que no haya compresión
+            response.direct_passthrough = True
+            if 'Content-Encoding' in response.headers:
+                del response.headers['Content-Encoding']
+            if 'Content-Length' in response.headers:
+                del response.headers['Content-Length']
+        return response
+    except Exception as e:
+        app.logger.error(f'Error serving {filename}: {str(e)}')
+        return str(e), 500
 
 @socketio.on('connect')
 def handle_connect():
