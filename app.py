@@ -70,15 +70,15 @@ def controller():
 @app.route('/static/Build/<path:filename>')
 def serve_build(filename):
     response = send_from_directory('static/Build', filename)
-    if filename.endswith(('.wasm', '.wasm.gz', '.wasm.br')):
+    if filename.endswith('.wasm'):
         response.headers['Content-Type'] = 'application/wasm'
         response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
         response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
-        if filename.endswith('.gz'):
-            response.headers['Content-Encoding'] = 'gzip'
-        elif filename.endswith('.br'):
-            response.headers['Content-Encoding'] = 'br'
-        response.direct_passthrough = True
+        response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
+        response.headers['Accept-Ranges'] = 'bytes'
+        # Eliminar Content-Encoding si existe
+        if 'Content-Encoding' in response.headers:
+            del response.headers['Content-Encoding']
     return response
 
 @socketio.on('connect')
