@@ -11,6 +11,9 @@ Este proyecto implementa una comunicación bidireccional en tiempo real entre un
    - Sistema de logging DEBUG
    - Identificación de tipo de cliente
    - Gestión de conexiones múltiples
+   - Manejo específico de MIME types
+   - Configuración de headers para WASM
+   - Sistema de caché integrado
 
 2. **Cliente Controlador (controller.js)**
    - Interfaz de usuario responsiva

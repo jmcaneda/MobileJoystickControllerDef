@@ -8,6 +8,9 @@
    - Enruta los eventos entre dispositivos móviles y Unity
    - Implementa el protocolo de comunicación
    - Sistema de logging para debugging
+   - Manejo optimizado de archivos WASM
+   - Headers CORS y seguridad configurados
+   - Caché y streaming de recursos
 
 2. **Controlador Móvil (Frontend)**
    - Interfaz táctil responsiva 
