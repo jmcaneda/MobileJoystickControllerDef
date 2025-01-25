@@ -5,6 +5,8 @@ Mediante la lectura de un **QR**, abrimos la interfaz para el manejo del videoju
 
 Lee detenidamente el contenido de la carpeta docs, en el que podrás encontrar variada información sobre este proyecto. Este proyecto es el resultado del uso en Replit, de Agent y Assistant.
 
+- En app\_spec.md, podrás encontrar información de utilidad para la configuración de MIME types para WebAssembly.
+
 - En user\_manual.md, podrás encontrar información de utilidad para el manejo de las interfaces.
 
 - En technical\_spec.md, podrás encontrar información técnica en la que se apoya.
