@@ -76,9 +76,9 @@ def serve_build(filename):
         response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
         response.headers['Cross-Origin-Resource-Policy'] = 'cross-origin'
         response.headers['Accept-Ranges'] = 'bytes'
-        # Eliminar Content-Encoding si existe
-        if 'Content-Encoding' in response.headers:
-            del response.headers['Content-Encoding']
+        response.headers['Cache-Control'] = 'no-cache'
+        response.headers['Content-Encoding'] = 'gzip'
+        response.direct_passthrough = True
     return response
 
 @socketio.on('connect')
