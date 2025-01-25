@@ -70,14 +70,14 @@ def controller():
 @app.route('/static/Build/<path:filename>')
 def serve_build(filename):
     response = send_from_directory('static/Build', filename)
-    if filename.endswith('.wasm'):
-        # Clear any existing content encoding
-        if 'Content-Encoding' in response.headers:
-            del response.headers['Content-Encoding']
+    if filename.endswith(('.wasm', '.wasm.gz', '.wasm.br')):
         response.headers['Content-Type'] = 'application/wasm'
         response.headers['Cross-Origin-Embedder-Policy'] = 'require-corp'
         response.headers['Cross-Origin-Opener-Policy'] = 'same-origin'
-        # Remove unnecessary headers that might interfere
+        if filename.endswith('.gz'):
+            response.headers['Content-Encoding'] = 'gzip'
+        elif filename.endswith('.br'):
+            response.headers['Content-Encoding'] = 'br'
         response.direct_passthrough = True
     return response
 
